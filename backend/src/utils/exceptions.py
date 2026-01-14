@@ -9,6 +9,22 @@ class TaskNotFoundException(HTTPException):
         )
 
 
+class UserNotFoundException(HTTPException):
+    def __init__(self, user_id: str):
+        super().__init__(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with id {user_id} not found"
+        )
+
+
+class UserAlreadyExistsException(HTTPException):
+    def __init__(self, detail: str):
+        super().__init__(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=detail
+        )
+
+
 class UnauthorizedUserException(HTTPException):
     def __init__(self):
         super().__init__(

@@ -1,12 +1,14 @@
 import logging
-from datetime import datetime
-from fastapi import FastAPI
+from datetime import datetime, timedelta
+from fastapi import FastAPI, Form
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware import Middleware
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.responses import Response
 from .config.settings import settings
 from .api.v1 import tasks
+from .api.v1 import users
+import jwt
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
@@ -50,12 +52,9 @@ app.add_middleware(
 )
 
 
-import jwt
-from datetime import datetime, timedelta
-from .config.settings import settings
-
 # Include API routes
 app.include_router(tasks.router, prefix="/api", tags=["tasks"])
+app.include_router(users.router, prefix="/api", tags=["users"])
 
 
 @app.get("/")
@@ -71,7 +70,7 @@ def health_check():
 
 
 @app.post("/auth/token")
-def generate_token(email: str, name: str = None):
+def generate_token(email: str = Form(...), name: str = Form(None)):
     """Development endpoint to generate JWT token for testing"""
     user_id = f"user_{email.replace('@', '_at_').replace('.', '_dot_')}"
 

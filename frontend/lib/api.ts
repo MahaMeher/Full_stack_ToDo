@@ -19,10 +19,9 @@ class ApiClient {
       const url = `${this.baseUrl}${endpoint}`;
 
       // Get session token if available
-      const session = await getSession();
       const headers = {
         'Content-Type': 'application/json',
-        ...(session?.jwtToken && { 'Authorization': `Bearer ${session.jwtToken}` }),
+        ...(await this.getSessionHeader()),
         ...options.headers,
       };
 
@@ -35,18 +34,41 @@ class ApiClient {
         // Try to get error message from response
         let errorMessage = `HTTP error! status: ${response.status}`;
         try {
-          const errorData = await response.json();
-          if (errorData.message) {
-            errorMessage = errorData.message;
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const errorData = await response.json();
+            if (errorData.message) {
+              errorMessage = errorData.message;
+            }
+          } else {
+            const errorText = await response.text();
+            if (errorText) {
+              errorMessage = errorText;
+            }
           }
         } catch (parseError) {
           // If we can't parse the error response, use the status code
           console.warn('Could not parse error response:', parseError);
         }
 
-        throw new Error(errorMessage);
+        return { error: errorMessage, success: false };
       }
 
+      // Handle 204 No Content responses (and other 2xx responses with no content)
+      if (response.status === 204) {
+        return { data: null as any, success: true };
+      }
+
+      // Check if response has content before trying to parse JSON
+      const contentLength = response.headers.get('content-length');
+      const contentType = response.headers.get('content-type');
+
+      if (contentLength === '0' || !contentType || !contentType.includes('application/json')) {
+        // If there's no content or not JSON, return empty data
+        return { data: null as any, success: true };
+      }
+
+      // For responses with JSON content, parse normally
       const data = await response.json();
       return { data, success: true };
     } catch (error: any) {
@@ -94,27 +116,119 @@ class ApiClient {
 
   // Task-specific API methods
   async getTasks(): Promise<ApiResponse<Task[]>> {
-    return this.get<Task[]>('/api/tasks');
+    const response = await this.get<any>('/api/tasks');
+    if (response.success && response.data && Array.isArray(response.data.tasks)) {
+      // Handle the wrapped response format from backend and transform snake_case to camelCase
+      const transformedTasks = response.data.tasks.map((task: any) => ({
+        id: task.id,
+        title: task.title,
+        description: task.description,
+        completed: task.completed,
+        createdAt: task.created_at,
+        updatedAt: task.updated_at,
+        userId: task.user_id,
+      }));
+      return { data: transformedTasks, success: true };
+    } else if (response.success && Array.isArray(response.data)) {
+      // Fallback: handle direct array response and transform snake_case to camelCase
+      const transformedTasks = response.data.map((task: any) => ({
+        id: task.id,
+        title: task.title,
+        description: task.description,
+        completed: task.completed,
+        createdAt: task.created_at,
+        updatedAt: task.updated_at,
+        userId: task.user_id,
+      }));
+      return { data: transformedTasks, success: true };
+    }
+    return { error: response.error || 'Failed to fetch tasks', success: false };
   }
 
   async getTask(id: string): Promise<ApiResponse<Task>> {
-    return this.get<Task>(`/api/tasks/${id}`);
+    const response = await this.get<any>(`/api/tasks/${id}`);
+    if (response.success && response.data) {
+      // Transform snake_case to camelCase
+      const transformedTask = {
+        id: response.data.id,
+        title: response.data.title,
+        description: response.data.description,
+        completed: response.data.completed,
+        createdAt: response.data.created_at,
+        updatedAt: response.data.updated_at,
+        userId: response.data.user_id,
+      };
+      return { data: transformedTask, success: true };
+    }
+    return { error: response.error || 'Failed to fetch task', success: false };
   }
 
   async createTask(taskData: TaskFormData): Promise<ApiResponse<Task>> {
-    return this.post<Task>('/api/tasks', taskData);
+    const response = await this.post<any>('/api/tasks', taskData);
+    if (response.success && response.data) {
+      // Transform snake_case to camelCase
+      const transformedTask = {
+        id: response.data.id,
+        title: response.data.title,
+        description: response.data.description,
+        completed: response.data.completed,
+        createdAt: response.data.created_at,
+        updatedAt: response.data.updated_at,
+        userId: response.data.user_id,
+      };
+      return { data: transformedTask, success: true };
+    }
+    return { error: response.error || 'Failed to create task', success: false };
   }
 
   async updateTask(id: string, taskData: Partial<TaskFormData>): Promise<ApiResponse<Task>> {
-    return this.put<Task>(`/api/tasks/${id}`, taskData);
+    const response = await this.put<any>(`/api/tasks/${id}`, taskData);
+    if (response.success && response.data) {
+      // Transform snake_case to camelCase
+      const transformedTask = {
+        id: response.data.id,
+        title: response.data.title,
+        description: response.data.description,
+        completed: response.data.completed,
+        createdAt: response.data.created_at,
+        updatedAt: response.data.updated_at,
+        userId: response.data.user_id,
+      };
+      return { data: transformedTask, success: true };
+    }
+    return { error: response.error || 'Failed to update task', success: false };
   }
 
   async deleteTask(id: string): Promise<ApiResponse<boolean>> {
-    return this.delete<boolean>(`/api/tasks/${id}`);
+    const response = await this.request<any>(`/api/tasks/${id}`, { method: 'DELETE' });
+    if (response.success) {
+      // Return true to indicate successful deletion
+      return { data: true, success: true };
+    }
+    return response;
+  }
+
+  private async getSessionHeader() {
+    const session = await getSession();
+    return session?.jwtToken ? { 'Authorization': `Bearer ${session.jwtToken}` } : {};
   }
 
   async toggleTaskCompletion(id: string): Promise<ApiResponse<Task>> {
-    return this.patch<Task>(`/api/tasks/${id}/complete`, {});
+    const response = await this.patch<any>(`/api/tasks/${id}/complete`, {});
+    if (response.success && response.data) {
+      // Transform snake_case to camelCase
+      const transformedTask = {
+        id: response.data.id,
+        title: response.data.title,
+        description: response.data.description,
+        completed: response.data.completed,
+        createdAt: response.data.created_at,
+        updatedAt: response.data.updated_at,
+        userId: response.data.user_id,
+      };
+      return { data: transformedTask, success: true };
+    }
+    return { error: response.error || 'Failed to toggle task completion', success: false };
   }
 }
 

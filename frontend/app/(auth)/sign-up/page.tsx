@@ -40,9 +40,8 @@ export default function SignUpPage() {
     // Attempt registration
     const result = await register(name, email, password);
     if (result.success) {
-      // Redirect to dashboard
-      router.push('/dashboard');
-      router.refresh(); // Refresh to update the UI
+      // Redirect to login page after successful registration
+      router.push('/sign-in');
     } else {
       setErrors({ general: result.error || 'Registration failed' });
     }

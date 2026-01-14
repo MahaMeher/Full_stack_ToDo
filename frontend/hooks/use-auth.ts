@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { UserSession } from '@/types/user';
 import { getSession, signIn, signUp, signOut } from '@/lib/auth';
 
@@ -49,9 +50,13 @@ export function useAuth() {
         setUser(userSession);
         return { success: true, user: userSession };
       } else {
+        // Clear user state if login failed
+        setUser(null);
         return { success: false, error: result.error?.message || 'Login failed' };
       }
     } catch (error) {
+      // Clear user state if login failed
+      setUser(null);
       return { success: false, error: (error as Error).message };
     } finally {
       setLoading(false);

@@ -6,6 +6,15 @@ from .task import (
     TaskToggleCompleteResponse,
     TaskListResponse
 )
+from .user import (
+    UserBase,
+    UserCreate,
+    UserUpdate,
+    UserLogin,
+    UserPublic,
+    UserRegisterResponse,
+    TokenResponse
+)
 
 __all__ = [
     "TaskBase",
@@ -13,5 +22,12 @@ __all__ = [
     "TaskUpdate",
     "TaskResponse",
     "TaskToggleCompleteResponse",
-    "TaskListResponse"
+    "TaskListResponse",
+    "UserBase",
+    "UserCreate",
+    "UserUpdate",
+    "UserLogin",
+    "UserPublic",
+    "UserRegisterResponse",
+    "TokenResponse"
 ]

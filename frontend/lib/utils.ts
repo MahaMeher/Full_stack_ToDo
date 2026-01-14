@@ -6,13 +6,57 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatDate(date: Date | string): string {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return dateObj.toLocaleDateString('en-US', {
+  // Create date object - ensure proper timezone handling
+  let dateObj: Date;
+  if (typeof date === 'string') {
+    // If date string is missing timezone info, assume it's UTC and convert to local
+    if (!date.includes('Z') && !date.includes('+') && !date.includes('GMT') && !date.includes('UTC')) {
+      // Add 'Z' suffix to treat as UTC if no timezone info is present
+      dateObj = new Date(date + 'Z');
+    } else {
+      dateObj = new Date(date);
+    }
+  } else {
+    dateObj = date;
+  }
+
+  // Format using user's local timezone
+  return dateObj.toLocaleString('en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
+    hour12: true, // Use 12-hour format
+    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+  });
+}
+
+export function formatDateTime(date: Date | string): string {
+  // Create date object - ensure proper timezone handling
+  let dateObj: Date;
+  if (typeof date === 'string') {
+    // If date string is missing timezone info, assume it's UTC and convert to local
+    if (!date.includes('Z') && !date.includes('+') && !date.includes('GMT') && !date.includes('UTC')) {
+      // Add 'Z' suffix to treat as UTC if no timezone info is present
+      dateObj = new Date(date + 'Z');
+    } else {
+      dateObj = new Date(date);
+    }
+  } else {
+    dateObj = date;
+  }
+
+  return dateObj.toLocaleString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true, // Use 12-hour format
+    timeZoneName: 'short',
+    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
   });
 }
 

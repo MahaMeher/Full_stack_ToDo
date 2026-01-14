@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { useTask } from '@/hooks/use-task';
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,7 @@ import { ThemeToggle } from '@/components/theme/toggle';
 import { Plus } from 'lucide-react';
 
 export default function DashboardPage() {
+  const router = useRouter();
   const { user, logout } = useAuth();
   const { tasks, loading, error, createTask, updateTask, deleteTask, toggleTaskCompletion } = useTask();
   const { theme, toggleTheme } = useThemeContext();
@@ -22,6 +24,7 @@ export default function DashboardPage() {
 
   const handleLogout = async () => {
     await logout();
+    router.push('/sign-in'); // Redirect to login page after logout
   };
 
   const handleAddTask = () => {

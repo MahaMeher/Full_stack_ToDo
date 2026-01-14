@@ -3,7 +3,22 @@ from sqlmodel import Session
 from typing import Generator
 from ..config.database import get_session
 from ..auth.jwt_handler import extract_user_id_from_token
-from ..utils.exceptions import TokenValidationException
+from ..utils.exceptions import TokenValidationException, UserNotFoundException
+from ..services.user_service import UserService
+
+
+def get_db_session() -> Generator[Session, None, None]:
+    """
+    Dependency to get database session.
+
+    Yields:
+        Database session for use in API endpoints
+    """
+    session = next(get_session())
+    try:
+        yield session
+    finally:
+        session.close()
 
 
 def get_current_user_id(request: Request) -> str:
@@ -34,18 +49,33 @@ def get_current_user_id(request: Request) -> str:
     return user_id
 
 
-def get_db_session() -> Generator[Session, None, None]:
+def get_current_user(request: Request, session: Session = Depends(get_db_session)):
     """
-    Dependency to get database session.
+    Get the current authenticated user object from the JWT token.
 
-    Yields:
-        Database session for use in API endpoints
+    Args:
+        request: FastAPI request object containing the authorization header
+        session: Database session
+
+    Returns:
+        User object of the authenticated user
+
+    Raises:
+        TokenValidationException: If no token is provided or if the token is invalid
+        UserNotFoundException: If the user ID from token doesn't correspond to a user in DB
     """
-    session = next(get_session())
-    try:
-        yield session
-    finally:
-        session.close()
+    user_id = get_current_user_id(request)
+
+    user_service = UserService()
+    user = user_service.get_user_by_id(session, user_id)
+
+    if not user:
+        raise UserNotFoundException(user_id)
+
+    if not user.is_active:
+        raise TokenValidationException("User account is deactivated")
+
+    return user
 
 
 # Convenience dependency that provides both user ID and database session

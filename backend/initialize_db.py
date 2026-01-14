@@ -11,6 +11,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__)))
 from sqlmodel import SQLModel
 from src.config.database import engine
 from src.models.task import Task
+from src.models.user import User
 
 def create_tables():
     """Create all database tables."""
