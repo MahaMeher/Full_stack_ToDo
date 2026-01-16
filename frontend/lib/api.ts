@@ -18,17 +18,35 @@ class ApiClient {
     try {
       const url = `${this.baseUrl}${endpoint}`;
 
-      // Get session token if available
-      const headers = {
+      // Prepare headers explicitly
+      const sessionHeader = await this.getSessionHeader();
+      const optionsHeaders = options.headers || {};
+
+      // Merge headers safely
+      const headers: HeadersInit = {
         'Content-Type': 'application/json',
-        ...(await this.getSessionHeader()),
-        ...options.headers,
+        ...sessionHeader,
+        ...optionsHeaders,
       };
 
-      const response = await fetch(url, {
-        ...options,
+      // Prepare fetch options without headers to avoid conflicts
+      const fetchOptions: RequestInit = {
+        method: options.method,
+        body: options.body,
+        cache: options.cache,
+        credentials: options.credentials,
         headers,
-      });
+        integrity: options.integrity,
+        keepalive: options.keepalive,
+        mode: options.mode,
+        redirect: options.redirect,
+        referrer: options.referrer,
+        referrerPolicy: options.referrerPolicy,
+        signal: options.signal,
+        window: options.window,
+      };
+
+      const response = await fetch(url, fetchOptions);
 
       if (!response.ok) {
         // Try to get error message from response
@@ -208,9 +226,13 @@ class ApiClient {
     return response;
   }
 
-  private async getSessionHeader() {
-    const session = await getSession();
-    return session?.jwtToken ? { 'Authorization': `Bearer ${session.jwtToken}` } : {};
+  private async getSessionHeader(): Promise<Record<string, string>> {
+    try {
+      const session = await getSession();
+      return session?.jwtToken ? { 'Authorization': `Bearer ${session.jwtToken}` } : {};
+    } catch {
+      return {};
+    }
   }
 
   async toggleTaskCompletion(id: string): Promise<ApiResponse<Task>> {

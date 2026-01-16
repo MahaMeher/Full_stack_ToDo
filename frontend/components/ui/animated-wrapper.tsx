@@ -35,12 +35,7 @@ const AnimatedWrapper = React.forwardRef<HTMLDivElement, AnimatedWrapperProps>(
           return {
             hidden: { opacity: 0 },
             visible: {
-              opacity: 1,
-              transition: {
-                duration,
-                delay,
-                ease: 'easeOut'
-              }
+              opacity: 1
             },
           };
         case 'scaleIn':
@@ -48,12 +43,7 @@ const AnimatedWrapper = React.forwardRef<HTMLDivElement, AnimatedWrapperProps>(
             hidden: { scale: 0.8, opacity: 0 },
             visible: {
               scale: 1,
-              opacity: 1,
-              transition: {
-                duration,
-                delay,
-                ease: 'easeOut'
-              }
+              opacity: 1
             },
           };
         case 'slideIn':
@@ -70,12 +60,7 @@ const AnimatedWrapper = React.forwardRef<HTMLDivElement, AnimatedWrapperProps>(
             visible: {
               x: 0,
               y: 0,
-              opacity: 1,
-              transition: {
-                duration,
-                delay,
-                ease: 'easeOut'
-              }
+              opacity: 1
             },
           };
       }
@@ -88,9 +73,13 @@ const AnimatedWrapper = React.forwardRef<HTMLDivElement, AnimatedWrapperProps>(
         animate={animateOnLoad ? 'visible' : 'hidden'}
         exit="hidden"
         variants={getAnimationVariant()}
+        transition={{
+          duration,
+          delay,
+          ease: [0.32, 0.72, 0.62, 1.01]
+        }}
         viewport={{ once }}
         className={cn(className)}
-        {...props}
       >
         {children}
       </motion.div>

@@ -4,7 +4,11 @@ import { Inter } from 'next/font/google'
 import { ThemeProvider } from '@/components/theme/provider'
 import { Toaster } from '@/components/ui/toaster'
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  preload: true
+})
 
 export const metadata: Metadata = {
   title: {
