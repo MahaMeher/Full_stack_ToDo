@@ -189,8 +189,31 @@ docker-compose up --build
 ```
 
 ### Production Deployment
-- Backend: Deploy to platforms like Heroku, Railway, or AWS
-- Frontend: Deploy to Vercel, Netlify, or similar platforms
+
+#### Backend Deployment
+- Deploy the FastAPI backend to platforms like Hugging Face Spaces, Heroku, Railway, or AWS
+- Example Hugging Face deployment: https://mahamode-hackathon-2.hf.space/
+
+#### Frontend Deployment
+- Deploy the Next.js frontend to Vercel, Netlify, or similar platforms
+- Example Vercel deployment: https://full-stack-to-do-tau.vercel.app/
+
+#### Environment Configuration for Production
+When deploying the frontend, make sure to set the environment variables appropriately:
+
+For Vercel deployment, add these environment variables in your Vercel dashboard:
+```
+NEXT_PUBLIC_API_BASE_URL=https://mahamode-hackathon-2.hf.space  # Replace with your backend URL
+NEXT_PUBLIC_BETTER_AUTH_SECRET=your-production-auth-secret
+NEXTAUTH_URL=https://full-stack-to-do-tau.vercel.app  # Replace with your frontend URL
+```
+
+#### Integration Steps
+1. Deploy your backend to Hugging Face Spaces or another platform
+2. Update the `NEXT_PUBLIC_API_BASE_URL` in your frontend deployment to point to your backend
+3. Ensure CORS is configured properly on your backend to allow requests from your frontend domain
+4. Deploy your frontend to Vercel with the updated environment variables
+5. Test all functionality to ensure smooth integration between frontend and backend
 
 ## 🤝 Contributing
 
