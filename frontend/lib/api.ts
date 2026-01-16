@@ -1,6 +1,8 @@
 import { getSession } from '@/lib/auth';
 import { Task, TaskFormData } from '@/types/task';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 export interface ApiResponse<T = any> {
   data?: T;
   error?: string;
@@ -11,7 +13,7 @@ class ApiClient {
   private baseUrl: string;
 
   constructor() {
-    this.baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+    this.baseUrl = API_BASE_URL || 'http://localhost:8000';
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
